@@ -55,18 +55,20 @@ public class ItemStack {
     }
 
     public ItemStack clone(){
-        return new ItemStack(item, count, data.clone());
+        return clone(count);
     }
     public ItemStack clone(int newCount){
-        return new ItemStack(item, newCount, data.clone());
+        return new ItemStack(item, newCount, data==null?null:data.clone());
     }
 
     public boolean stacks(ItemStack is){
         if(is == null)
-            return false;
+            return true;
         if(is.getItem() != getItem())
             return false;
-        return is.getData().stacks(is.getData());
+        if(this.getData()==null || is.getData()==null)
+            return true;
+        return this.getData().stacks(is.getData());
     }
 
     private int fixCount(){

@@ -71,7 +71,7 @@ public class Inventory {
     public void addItem(ItemStack item){
         int toAdd = item.getCount();
         for(int i = 0;i < items.length;i++){
-            if(item.stacks(items[i]) && canPut(i, item)){
+            if(items[i]!=null&&item.stacks(items[i]) && canPut(i, item)){
                 int toSupply = item.getItem().getStackSize()-items[i].getCount();
                 if(toSupply > 0) {
                     toAdd -= toSupply;
