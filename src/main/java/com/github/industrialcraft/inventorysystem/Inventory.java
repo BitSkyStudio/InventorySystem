@@ -79,7 +79,7 @@ public class Inventory {
         int toAdd = item.getCount();
         for(int i = 0;i < items.length;i++){
             if(getAt(i)!=null&&item.stacks(items[i]) && canPut(i, item)){
-                int toSupply = item.getItem().getStackSize()-items[i].getCount();
+                int toSupply = Math.min(item.getItem().getStackSize()-items[i].getCount(), toAdd);
                 if(toSupply > 0) {
                     toAdd -= toSupply;
                     items[i].addCount(toSupply);
