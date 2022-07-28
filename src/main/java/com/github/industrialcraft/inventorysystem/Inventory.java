@@ -168,9 +168,9 @@ public class Inventory {
         clear();
         for(int i = 0;i < content.stacks.length;i++){
             if(i < items.length)
-                setAt(i, content.stacks[i].clone());
+                setAt(i, content.stacks[i]==null?null:content.stacks[i].clone());
             else
-                overflow(content.stacks[i]);
+                overflow(content.stacks[i]==null?null:content.stacks[i].clone());
         }
     }
 
