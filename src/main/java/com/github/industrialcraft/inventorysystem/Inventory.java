@@ -9,7 +9,7 @@ public class Inventory {
     public Inventory(int size, ItemOverflowHandler handler, Object data) {
         this.items = new ItemStack[size];
         for(int i = 0;i < size;i++){
-            this.items[i] = null;
+            setAt(i, null);
         }
         this.overflowHandler = handler;
         this.data = data;
@@ -17,7 +17,7 @@ public class Inventory {
     public ItemStack getAt(int index){
         ItemStack is = this.items[index];
         if(is != null && is.getCount() <= 0){
-            items[index] = null;
+            setAt(index, null);
         }
         return items[index];
     }
@@ -39,12 +39,12 @@ public class Inventory {
                 if(getAt(index) != null && dump)
                     overflow(items[index]);
 
-                this.items[index] = item;
+                setAt(index, item);
             }
         } else {
             if (canPut(index, item)) {
                 if (getAt(index) == null) {
-                    items[index] = is;
+                    setAt(index, is);
                     return;
                 }
             }
@@ -83,6 +83,7 @@ public class Inventory {
                 if(toSupply > 0) {
                     toAdd -= toSupply;
                     items[i].addCount(toSupply);
+                    setAt(i, items[i]);
                     if(toAdd <= 0)
                         return;
                 }
@@ -90,7 +91,7 @@ public class Inventory {
         }
         for(int i = 0;i < items.length;i++){
             if(getAt(i) == null && canPut(i, item)){
-                items[i] = item.clone(toAdd);
+                setAt(i, item.clone(toAdd));
                 return;
             }
         }
@@ -110,8 +111,7 @@ public class Inventory {
                 continue;
             int removed = Math.min(toRemove,items[i].getCount());
             items[i].removeCount(removed);
-            if(items[i].getCount() == 0)
-                items[i] = null;
+            setAt(i, items[i]);
             toRemove -= removed;
             if(toRemove <= 0)
                 break;
@@ -130,7 +130,7 @@ public class Inventory {
 
     public void clear(){
         for(int i = 0;i < items.length;i++){
-            items[i] = null;
+            setAt(i, null);
         }
     }
     public void dropAll(){
@@ -145,7 +145,7 @@ public class Inventory {
         if(is == null)
             return;
         overflow(is);
-        items[slot] = null;
+        setAt(slot, null);
     }
     public boolean isEmpty(){
         for(ItemStack is : items){
@@ -154,6 +154,26 @@ public class Inventory {
         }
         return true;
     }
+    public InventoryContent saveContent(){
+        ItemStack[] contentItems = new ItemStack[items.length];
+        for(int i = 0;i < items.length;i++){
+            if(items[i] == null)
+                contentItems[i] = null;
+            else
+                contentItems[i] = items[i].clone();
+        }
+        return new InventoryContent(contentItems);
+    }
+    public void loadContent(InventoryContent content){
+        clear();
+        for(int i = 0;i < content.stacks.length;i++){
+            if(i < items.length)
+                setAt(i, content.stacks[i].clone());
+            else
+                overflow(content.stacks[i]);
+        }
+    }
+
     public <T> T getData() {
         return (T) data;
     }
