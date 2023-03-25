@@ -1,5 +1,7 @@
 package com.github.industrialcraft.inventorysystem;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.function.Predicate;
 
 public class Inventory {
@@ -75,11 +77,27 @@ public class Inventory {
         }
         return count;
     }
+    public int getRemainingSpaceFor(ItemStack item){
+        int space = 0;
+        for(int i = 0;i < items.length;i++){
+            if(getAt(i)!=null){
+                if(item.stacks(items[i]) && canPut(i, item)){
+                    int toSupply = Math.max(getStackSize(item) - items[i].getCount(), 0);
+                    space += toSupply;
+                }
+            } else {
+                if(getAt(i) == null && canPut(i, item)){
+                    space += getStackSize(item);
+                }
+            }
+        }
+        return space;
+    }
     public void addItem(ItemStack item){
         int toAdd = item.getCount();
         for(int i = 0;i < items.length;i++){
             if(getAt(i)!=null&&item.stacks(items[i]) && canPut(i, item)){
-                int toSupply = Math.min(item.getItem().getStackSize()-items[i].getCount(), toAdd);
+                int toSupply = Math.min(getStackSize(item)-items[i].getCount(), toAdd);
                 if(toSupply > 0) {
                     toAdd -= toSupply;
                     items[i].addCount(toSupply);
@@ -97,26 +115,28 @@ public class Inventory {
         }
         overflow(item.clone(toAdd));
     }
-    public boolean removeItems(IItem item, int count){
+    public List<ItemStack> removeItems(IItem item, int count){
         return removeItems(itemStack -> itemStack.getItem() == item, count);
     }
-    public boolean removeItems(Predicate<ItemStack> p, int count){
+    public List<ItemStack> removeItems(Predicate<ItemStack> p, int count){
         if(count(p) < count)
-            return false;
+            return null;
+        ArrayList<ItemStack> removedItems = new ArrayList<>();
         int toRemove = count;
         for(int i = 0;i < items.length;i++){
             if(getAt(i)==null)
                 continue;
-            if(p.test(items[i]))
+            if(!p.test(items[i]))
                 continue;
             int removed = Math.min(toRemove,items[i].getCount());
+            removedItems.add(items[i].clone(removed));
             items[i].removeCount(removed);
             setAt(i, items[i]);
             toRemove -= removed;
             if(toRemove <= 0)
                 break;
         }
-        return true;
+        return removedItems;
     }
 
     public boolean canPut(int index, ItemStack is){
@@ -172,6 +192,9 @@ public class Inventory {
             else
                 overflow(content.stacks[i]==null?null:content.stacks[i].clone());
         }
+    }
+    public int getStackSize(ItemStack item){
+        return item.getItem().getStackSize();
     }
 
     public <T> T getData() {
