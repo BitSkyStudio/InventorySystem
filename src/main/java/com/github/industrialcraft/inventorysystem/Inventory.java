@@ -23,11 +23,14 @@ public class Inventory {
         }
         return items[index];
     }
-    public void setAt(int index, ItemStack itemStack){
-        if(itemStack != null && itemStack.getCount() <= 0)
+    public ItemStack setAt(int index, ItemStack itemStack){
+        if(itemStack != null && itemStack.getCount() <= 0) {
             this.items[index] = null;
-        else
+            return null;
+        } else {
             this.items[index] = itemStack;
+            return itemStack;
+        }
     }
     public void putAt(int index, ItemStack is, EItemPutMode mode){
         putAt(index, is, mode.isOverwrite(), mode.isDump());
