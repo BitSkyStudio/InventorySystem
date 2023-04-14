@@ -1,5 +1,7 @@
 package com.github.industrialcraft.inventorysystem;
 
+import java.util.Objects;
+
 public class ItemStack {
     private final IItem item;
     private int count;
@@ -48,6 +50,24 @@ public class ItemStack {
         this.removeCount(amount);
         cloned.setCount(amount);
         return cloned;
+    }
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        ItemStack itemStack = (ItemStack) o;
+        return count == itemStack.count && item == itemStack.item && Objects.equals(data, itemStack.data);
+    }
+    public boolean equalsIgnoreCount(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        ItemStack itemStack = (ItemStack) o;
+        return item == itemStack.item && Objects.equals(data, itemStack.data);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(item, count, data);
     }
 
     public ItemData getData() {
