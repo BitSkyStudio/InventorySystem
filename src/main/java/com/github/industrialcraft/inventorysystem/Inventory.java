@@ -6,14 +6,12 @@ import java.util.function.Predicate;
 
 public class Inventory {
     ItemStack items[];
-    ItemOverflowHandler overflowHandler;
     Object data;
-    public Inventory(int size, ItemOverflowHandler handler, Object data) {
+    public Inventory(int size, Object data) {
         this.items = new ItemStack[size];
         for(int i = 0;i < size;i++){
             setAt(i, null);
         }
-        this.overflowHandler = handler;
         this.data = data;
     }
     public ItemStack getAt(int index){
@@ -32,29 +30,26 @@ public class Inventory {
             return itemStack;
         }
     }
-    public void putAt(int index, ItemStack is, EItemPutMode mode){
-        putAt(index, is, mode.isOverwrite(), mode.isDump());
-    }
-    public void putAt(int index, ItemStack is, boolean overwrite, boolean dump){
+    public ItemStack putAt(int index, ItemStack is, boolean overwrite){
         ItemStack item = is;
         if(item.getCount() <= 0)
             item = null;
         if(overwrite) {
+            ItemStack toReturn = null;
             if (canPut(index, item)) {
-                if(getAt(index) != null && dump)
-                    overflow(items[index]);
-
+                if(getAt(index) != null)
+                    toReturn = items[index].clone();
                 setAt(index, item);
             }
+            return toReturn;
         } else {
             if (canPut(index, item)) {
                 if (getAt(index) == null) {
                     setAt(index, is);
-                    return;
+                    return null;
                 }
             }
-            if (dump)
-                overflow(is);
+            return is.clone();
         }
     }
 
@@ -96,7 +91,7 @@ public class Inventory {
         }
         return space;
     }
-    public void addItem(ItemStack item){
+    public ItemStack addItem(ItemStack item){
         int toAdd = item.getCount();
         for(int i = 0;i < items.length;i++){
             if(getAt(i)!=null&&item.stacks(items[i]) && canPut(i, item)){
@@ -106,17 +101,17 @@ public class Inventory {
                     items[i].addCount(toSupply);
                     setAt(i, items[i]);
                     if(toAdd <= 0)
-                        return;
+                        return null;
                 }
             }
         }
         for(int i = 0;i < items.length;i++){
             if(getAt(i) == null && canPut(i, item)){
                 setAt(i, item.clone(toAdd));
-                return;
+                return null;
             }
         }
-        overflow(item.clone(toAdd));
+        return item.clone(toAdd);
     }
     public List<ItemStack> removeItems(IItem item, int count){
         return removeItems(itemStack -> itemStack.getItem() == item, count);
@@ -146,29 +141,21 @@ public class Inventory {
         return true;
     }
 
-    public void overflow(ItemStack is){
-        if(is != null)
-            this.overflowHandler.onOverflow(this, is);
-    }
-
     public void clear(){
         for(int i = 0;i < items.length;i++){
             setAt(i, null);
         }
     }
-    public void dropAll(){
-        for(ItemStack is : items){
-            if(is != null && is.getCount() > 0)
-                overflow(is);
-        }
-        clear();
-    }
-    public void drop(int slot){
+    public ItemStack take(int slot, int count, boolean exact){
         ItemStack is = getAt(slot);
         if(is == null)
-            return;
-        overflow(is);
-        setAt(slot, null);
+            return null;
+        if(exact && is.getCount() < count)
+            return null;
+        int toRemove = Math.min(count, is.getCount());
+        is.removeCount(toRemove);
+        setAt(slot, is);
+        return is.clone(toRemove);
     }
     public boolean isEmpty(){
         for(ItemStack is : items){
@@ -189,11 +176,8 @@ public class Inventory {
     }
     public void loadContent(InventoryContent content){
         clear();
-        for(int i = 0;i < content.stacks.length;i++){
-            if(i < items.length)
-                setAt(i, content.stacks[i]==null?null:content.stacks[i].clone());
-            else
-                overflow(content.stacks[i]==null?null:content.stacks[i].clone());
+        for(int i = 0;i < Math.min(content.stacks.length, items.length);i++){
+            setAt(i, content.stacks[i]==null?null:content.stacks[i].clone());
         }
     }
     public int getStackSize(ItemStack item){
