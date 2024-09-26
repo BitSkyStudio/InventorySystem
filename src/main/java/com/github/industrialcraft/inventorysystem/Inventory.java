@@ -30,26 +30,25 @@ public class Inventory {
             return itemStack;
         }
     }
-    public ItemStack putAt(int index, ItemStack is, boolean overwrite){
-        ItemStack item = is;
-        if(item.getCount() <= 0)
-            item = null;
-        if(overwrite) {
-            ItemStack toReturn = null;
-            if (canPut(index, item)) {
-                if(getAt(index) != null)
-                    toReturn = items[index].clone();
-                setAt(index, item);
-            }
-            return toReturn;
-        } else {
-            if (canPut(index, item)) {
-                if (getAt(index) == null) {
-                    setAt(index, is);
+    public ItemStack putAt(int index, ItemStack is){
+        if(is == null || is.getCount() <= 0)
+            return null;
+
+        if (canPut(index, is)) {
+            ItemStack current = getAt(index);
+            if (current == null) {
+                setAt(index, is);
+                return null;
+            } else {
+                int toDeposit = Math.min(current.getItem().getStackSize()-current.getCount(), is.getCount());
+                is.removeCount(toDeposit);
+                current.addCount(toDeposit);
+                if(is.getCount() <= 0)
                     return null;
-                }
+                return is;
             }
-            return is.clone();
+        } else {
+            return is;
         }
     }
 
