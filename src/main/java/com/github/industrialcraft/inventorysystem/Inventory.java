@@ -39,7 +39,7 @@ public class Inventory {
             if (current == null) {
                 setAt(index, is);
                 return null;
-            } else {
+            } else if(is.stacks(current)){
                 int toDeposit = Math.min(current.getItem().getStackSize()-current.getCount(), is.getCount());
                 is.removeCount(toDeposit);
                 current.addCount(toDeposit);
@@ -47,9 +47,8 @@ public class Inventory {
                     return null;
                 return is;
             }
-        } else {
-            return is;
         }
+        return is;
     }
 
     public int count(IItem item){
