@@ -8,7 +8,7 @@ public class ItemData {
     public ItemStack getItemStack() {
         return is;
     }
-    public ItemData clone(){
+    public ItemData clone(ItemStack is){
         return new ItemData(is);
     }
     public boolean stacks(ItemData itemData){

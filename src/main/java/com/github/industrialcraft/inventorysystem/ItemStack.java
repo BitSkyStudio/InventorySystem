@@ -11,10 +11,10 @@ public class ItemStack {
         this.count = count;
         this.data = item.createData(this);
     }
-    public ItemStack(IItem item, int count, ItemData data) {
-        this.item = item;
-        this.count = count;
-        this.data = data;
+    private ItemStack(ItemStack itemStack, int newCount) {
+        this.item = itemStack.getItem();
+        this.count = newCount;
+        this.data = itemStack.data==null?null:itemStack.data.clone(this);
     }
     public IItem getItem() {
         return item;
@@ -78,7 +78,7 @@ public class ItemStack {
         return clone(count);
     }
     public ItemStack clone(int newCount){
-        return new ItemStack(item, newCount, data==null?null:data.clone());
+        return new ItemStack(this, count);
     }
 
     public boolean stacks(ItemStack is){
