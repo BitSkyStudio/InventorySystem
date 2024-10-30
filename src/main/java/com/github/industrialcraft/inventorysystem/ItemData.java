@@ -1,6 +1,6 @@
 package com.github.industrialcraft.inventorysystem;
 
-public class ItemData {
+public abstract class ItemData {
     private final ItemStack is;
     public ItemData(ItemStack is) {
         this.is = is;
@@ -8,9 +8,7 @@ public class ItemData {
     public ItemStack getItemStack() {
         return is;
     }
-    public ItemData clone(ItemStack is){
-        return new ItemData(is);
-    }
+    public abstract ItemData clone(ItemStack is);
     public boolean stacks(ItemData itemData){
         return true;
     }
